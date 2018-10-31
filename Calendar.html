@@ -11,6 +11,7 @@
    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.3.1017/styles/kendo.common-material.min.css" />
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.3.1017/styles/kendo.material.min.css" />
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.3.1017/styles/kendo.material.mobile.min.css" />
+  
 
     <script src="https://kendo.cdn.telerik.com/2018.3.1017/js/jquery.min.js"></script>
     <script src="https://kendo.cdn.telerik.com/2018.3.1017/js/kendo.all.min.js"></script>
@@ -29,39 +30,59 @@
             <h4>Set Day of Week Blackout Days</h4>
             <ul id="inlineFormatting">
                 <li >
-                Sun
+                <button id="Sunday" class='weekday'>Sun</button>
                 </li>
                 <li>
-                  Mon
+                  <button id="Monday" class='weekday'>Mon</button>
                 </li>
                 <li >
-                  Tue
+                  <button id="Tuesday" class='weekday'>Tue</button>
                 </li>
               <li >
-                  Wed
+                  <button id="Wednesday" class='weekday'>Wed</button>
                 </li>
               <li >
-                  Thu
+                  <button id="Thursday" class='weekday'>Thu</button>
                 </li>
               <li >
-                  Fri
+                  <button id="Friday" class='weekday'>Fri</button>
                 </li>
               <li >
-                  Sat
+                  <button id="Saturday" class='weekday'>Sat</button>
                 </li>
             </ul>
+     <br/>
+      
+                    </p>
         </div>
   <br/>
     <div id='calendar' style='margin:10px'></div>
 
     <script>
+      var datesToSelect = [];
        $(document).ready(function () {
        
-      $("#inlineFormatting").kendoButtonGroup({
-                selection: "multiple",
-                 select: function (e) {
-                                   console.log( e);
-              
+         var weekday = new Array(7);
+    weekday[0] = "Sunday";
+    weekday[1] = "Monday";
+    weekday[2] = "Tuesday";
+    weekday[3] = "Wednesday";
+    weekday[4] = "Thursday";
+    weekday[5] = "Friday";
+    weekday[6] = "Saturday";
+         
+       
+     		function splice(array, removeItem)
+         {
+           var index = checkItemExists(array, removeItem);
+            array.splice(index,1);          
+         }
+         
+      $(".weekday" ).click(function(e)
+                              {
+        
+                               $(this).toggleClass('k-primary');   
+              console.log(e.target.id);
               var start = $('#start').data('kendoDatePicker');
         var end = $('#end').data('kendoDatePicker');
         var calendar = $('#calendar').data('kendoCalendar');
@@ -70,7 +91,7 @@
           
           
           var daysToAdd = 0;
-          var datesToSelect = [];
+          
           while (true) {
             var dateToAdd = start.value().addDays(daysToAdd);            
              
@@ -78,18 +99,25 @@
               //datesToSelect.push(dateToAdd);
               break;
             }
-            else if(e.indices.indexOf(dateToAdd.getDay()) !== -1)
-            {              
-              datesToSelect.push(dateToAdd);            
-            }            
+            else if(weekday[dateToAdd.getDay()] === e.target.id )
+            {        
+              if($(this).hasClass( "k-primary") && checkItemExists(datesToSelect, dateToAdd) === -1)
+                 {
+              			datesToSelect.push(dateToAdd);    
+                }
+                else
+                {
+                   splice(datesToSelect,dateToAdd);
+                }             
+             
+            } 
+           
             daysToAdd++;
           }
 
           calendar.selectDates(datesToSelect);
-        }
-              
-            },
-            index: 0
+        }              
+            
             });
       
        
@@ -111,9 +139,41 @@
       });
 
       $('#calendar').kendoCalendar({
-        selectable:'multiple'
+        selectable:'multiple',
+         change: onChange,
       });
 
+      function checkItemExists(array, value)
+      {
+        var index = -1;
+         for(var i=0; i<array.length; i++){
+             var date= array[i];
+           index = i;
+           if(date.toString() == value.toString()){             
+              return index;
+             }           
+            }
+        return -1;
+      }
+      
+       function onChange() {   
+         
+        var calendar = $('#calendar').data('kendoCalendar');        
+         
+        var selectedDate = this.value().addDays(0);
+         
+        var index = checkItemExists(datesToSelect, selectedDate);
+        if(index > -1)
+        {
+          datesToSelect.splice(index,1); 
+        }
+        else
+        {
+          datesToSelect.push(selectedDate);    
+        }       
+         
+        calendar.selectDates(datesToSelect);
+      }
       function rangeSelection() {
 
         
